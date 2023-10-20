@@ -4,16 +4,16 @@
 #include "input.h"
 
 struct OrtographicCamera2D {
-	Vec2 position;
-	Vec2 dimensions;
+	Vec2 position{0};
+	Vec2 dimensions{ 0 };
 	float zoom = 1.0f;
 };
 
 struct Transform {
-	Vec2 size;
-	Vec2 pos;
-	iVec2 atlasOffset;
-	iVec2 spriteSize;
+	Vec2 size{ 0 };
+	Vec2 pos{ 0 };
+	iVec2 atlasOffset{ 0 };
+	iVec2 spriteSize{ 0 };
 };
 
 struct RenderData

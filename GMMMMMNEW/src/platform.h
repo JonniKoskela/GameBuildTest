@@ -8,7 +8,10 @@ void updateWindow();
 
 void* platform_load_gl_function(char* functionPointer);
 void platform_swap_buffers();
+void platformSetVsync(bool vsync);
+
 void* loadDynamicLibrary(char* dll);
 void* loadDynamicFunction(void* dll, char* fn);
 bool freeDLL(void* dll);
+
 void platform_fill_keycode_lookup_table();

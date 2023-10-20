@@ -4,6 +4,8 @@
 #include "input.h"
 #include "fileUtils.h"
 
+constexpr int UPDATESPERSECOND = 60;
+constexpr double UPDATE_DELAY = 1.0 / UPDATESPERSECOND;
 constexpr int WORLD_WIDTH = 320;
 constexpr int WORLD_HEIGHT = 180;
 constexpr int TILESIZE = 8;
@@ -39,6 +41,7 @@ struct KeyMapping {
 
 struct GameState
 {
+	float updateTimer;
 	KeyMapping keyMappings[GAME_INPUT_COUNT];
 	bool initialized = false;
 	iVec2 playerPos = {0,0};
@@ -51,7 +54,7 @@ static GameState* gameState = new GameState; // <-------------------------------
 
 extern "C"
 {
-	_declspec(dllexport) void updateGame(GameState* gameStateIn, RenderData* renderDataIn, Input* inputIn);
+	_declspec(dllexport) void updateGame(GameState* gameStateIn, RenderData* renderDataIn, Input* inputIn, float dt);
 }
 
 

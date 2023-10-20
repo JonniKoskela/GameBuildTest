@@ -11,6 +11,7 @@
 // GLOBALS________________________________________________________________
 static HWND window;
 static HDC dc;
+static PFNWGLSWAPINTERVALEXTPROC wglSwapIntervalEXT_ptr;
 
 #ifndef KEYLOOKUPTABLE
 #define KEYLOOKUPTABLE
@@ -158,6 +159,7 @@ bool createWindow(int width, int height, char* title)
 
 		wglChoosePixelFormatARB = (PFNWGLCHOOSEPIXELFORMATARBPROC)platform_load_gl_function(const_cast<char*>("wglChoosePixelFormatARB"));
 		wglCreateContextAttribsARB = (PFNWGLCREATECONTEXTATTRIBSARBPROC)platform_load_gl_function(const_cast<char*>("wglCreateContextAttribsARB"));
+		wglSwapIntervalEXT_ptr = (PFNWGLSWAPINTERVALEXTPROC)platform_load_gl_function(const_cast < char*>("wglSwapIntervalEXT"));
 
 
 		if (!wglCreateContextAttribsARB || !wglChoosePixelFormatARB)
@@ -281,14 +283,6 @@ bool createWindow(int width, int height, char* title)
 
 void updateWindow()
 {
-
-	for (int keyCode = 0; keyCode < KEY_COUNT; keyCode++)
-	{
-		input->keys[keyCode].justReleased = false;
-		input->keys[keyCode].justPressed = false;
-		input->keys[keyCode].halfTransitionCount = 0;
-	}
-
 	MSG msg;
 	while (PeekMessageA(&msg, window, 0, 0, PM_REMOVE))
 	{
@@ -301,10 +295,8 @@ void updateWindow()
 		GetCursorPos(&point);
 		ScreenToClient(window, &point);
 
-		input->prevMousePos = input->mousePos;
 		input->mousePos.x = point.x;
 		input->mousePos.y = point.y;
-		input->relMouse = input->mousePos - input->prevMousePos;
 
 		input->mousePosWorld = screenToWorld(input->mousePos);
 	}
@@ -331,6 +323,10 @@ void* platform_load_gl_function(char* fnName)
 void platform_swap_buffers()
 {
 	SwapBuffers(dc);
+}
+void platformSetVsync(bool vsync)
+{
+	wglSwapIntervalEXT_ptr(vsync);
 }
 
 

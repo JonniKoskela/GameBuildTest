@@ -19,6 +19,7 @@ static KeyCodeID KeyCodeLookupTable[KEY_COUNT];
 #include <stdlib.h>
 #include <stdio.h>
 #include <memory>
+#include <chrono>
 
 #include "OpenGLRenderer.hpp"
 
@@ -28,6 +29,8 @@ constexpr auto dllPath = const_cast<char*>("C:\\Users\\Admin\\source\\repos\\Gam
 typedef decltype(updateGame) updateGameType;
 static updateGameType* updateGamePtr;
 
+double getDT(); // <-- get deltaTime
+
 void reloadGameDLL(BumpAllocator* transientStorage);
 
 
@@ -35,7 +38,11 @@ void reloadGameDLL(BumpAllocator* transientStorage);
 
 
 int main() {
+
+	getDT();
+
 	platform_fill_keycode_lookup_table();
+
 	char title[] = "GAME";
 	BumpAllocator transientStorage = makeBumpAllocator(MB(50));
 	BumpAllocator persistentStorage = makeBumpAllocator(MB(50));
@@ -48,7 +55,10 @@ int main() {
 
 	gameState = (GameState*)bumpAlloc(&persistentStorage, sizeof(GameState));
 	assert(gameState && "failed to allocate GameState");
+
+
 	createWindow(1280, 720, &title[0]);
+	platformSetVsync(true);
 	gl_init(&transientStorage);
 	
 	updateGamePtr = (updateGameType*)loadDynamicFunction(loadDynamicLibrary(dllPath), (char*)"updateGame");
@@ -58,15 +68,27 @@ int main() {
 
 	while (running)
 	{
+		float dt = getDT();
 		reloadGameDLL(&transientStorage);
 		updateWindow();
-		updateGame(gameState,renderData,input);
+		updateGame(gameState,renderData,input, dt);
 		gl_render();
 		platform_swap_buffers();		
 
 		transientStorage.used = 0;
 	};
 }
+
+double getDT() {
+	static auto lastTime = std::chrono::steady_clock::now();
+	auto currTime = std::chrono::steady_clock::now();
+
+	double delta = std::chrono::duration<double>(currTime - lastTime).count();
+	lastTime = currTime;
+
+	return delta;
+}
+
 
 void reloadGameDLL(BumpAllocator* transientStorage)
 {
@@ -99,7 +121,8 @@ void reloadGameDLL(BumpAllocator* transientStorage)
 
 
 }
-void updateGame(GameState* gameStateIn, RenderData* renderDataIn, Input* inputIn)
+
+void updateGame(GameState* gameStateIn, RenderData* renderDataIn, Input* inputIn, float dt)
 {
-	updateGamePtr(gameStateIn,renderDataIn, inputIn);
+	updateGamePtr(gameStateIn,renderDataIn, inputIn, dt);
 }
